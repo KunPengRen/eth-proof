@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "commander": "^6.2.0",
-    "eth-object": "^1.0.3",
+    "eth-object": "github:LeonLi000/eth-object#master",
     "eth-util-lite": "^1.0.1",
     "isomorphic-rpc": "^1.1.1",
     "merkle-patricia-tree": "github:zmitton/merkle-patricia-tree#build",
