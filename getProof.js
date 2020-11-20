@@ -5,11 +5,11 @@ const Tree = require('merkle-patricia-tree')
 
 const Rpc  = require('isomorphic-rpc')
 
-const { Header, Proof, Receipt, Transaction } = require('eth-object')
+const { Header, Proof, Receipt, Transaction, Log } = require('eth-object')
 
 
 module.exports = class GetProof{
-  constructor(rpcProvider = "https://mainnet.infura.io"){
+  constructor(rpcProvider){
     this.rpc = new Rpc(rpcProvider)
     this.eth_getProof = this.rpc.eth_getProof
   }
@@ -25,7 +25,7 @@ module.exports = class GetProof{
     await Promise.all(rpcBlock.transactions.map((siblingTx, index) => {
       let siblingPath = encode(index)
       let serializedSiblingTx = Transaction.fromRpc(siblingTx).serialize()
-      return promisfy(tree.put, tree)(siblingPath, serializedSiblingTx) 
+      return promisfy(tree.put, tree)(siblingPath, serializedSiblingTx)
     }))
 
     let [_,__,stack] = await promisfy(tree.findPath, tree)(encode(targetTx.transactionIndex))
@@ -36,7 +36,7 @@ module.exports = class GetProof{
       txIndex: targetTx.transactionIndex,
     }
   }
-  async receiptProof(txHash){
+  async receiptProof(txHash, logIndex){
     let targetReceipt = await this.rpc.eth_getTransactionReceipt(txHash)
     if(!targetReceipt){ throw new Error("txhash/targetReceipt not found. (use Archive node)")}
 
@@ -45,7 +45,6 @@ module.exports = class GetProof{
     let receipts = await Promise.all(rpcBlock.transactions.map((siblingTxHash) => {
       return this.rpc.eth_getTransactionReceipt(siblingTxHash)
     }))
-
     let tree = new Tree();
 
     await Promise.all(receipts.map((siblingReceipt, index) => {
@@ -56,11 +55,13 @@ module.exports = class GetProof{
 
     let [_,__,stack] = await promisfy(tree.findPath, tree)(encode(targetReceipt.transactionIndex))
 
-    return {
-      header:  Header.fromRpc(rpcBlock),
-      receiptProof:  Proof.fromStack(stack),
-      txIndex: targetReceipt.transactionIndex,
-    }
+    return JSON.stringify({
+      // header:  Header.fromRpc(rpcBlock),
+      log_data: Log.fromRpc(targetReceipt.logs[logIndex]).serialize().toString('hex'),
+      receipt_data: Receipt.fromRpc(targetReceipt).serialize().toString('hex'),
+      proof:  Proof.fromStack(stack),
+      // txIndex: targetReceipt.transactionIndex,
+    })
   }
   async accountProof(address, blockHash = null){
     let rpcBlock, rpcProof
