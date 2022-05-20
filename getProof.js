@@ -56,8 +56,8 @@ module.exports = class GetProof{
     let [_,__,stack] = await promisfy(tree.findPath, tree)(encode(targetReceipt.transactionIndex))
 
     return JSON.stringify({
-      // header:  Header.fromRpc(rpcBlock),
-      log_data: Log.fromRpc(targetReceipt.logs[logIndex]).serialize().toString('hex'),
+      receipt_root:  Header.fromRpc(rpcBlock).receiptRoot.toString('hex'),
+      // log_data: Log.fromRpc(targetReceipt.logs[logIndex]).serialize().toString('hex'),
       receipt_data: Receipt.fromRpc(targetReceipt).serialize().toString('hex'),
       proof:  Proof.fromStack(stack),
       txIndex: targetReceipt.transactionIndex,
