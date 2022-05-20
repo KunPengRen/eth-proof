@@ -60,7 +60,7 @@ module.exports = class GetProof{
       log_data: Log.fromRpc(targetReceipt.logs[logIndex]).serialize().toString('hex'),
       receipt_data: Receipt.fromRpc(targetReceipt).serialize().toString('hex'),
       proof:  Proof.fromStack(stack),
-      // txIndex: targetReceipt.transactionIndex,
+      txIndex: targetReceipt.transactionIndex,
     })
   }
   async accountProof(address, blockHash = null){
